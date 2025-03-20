@@ -89,7 +89,7 @@ namespace om_position_controller
 //   desired_pose_subscriber_ = node_handle.subscribe("desired_pose", 1, &PositionController::desiredPoseCallback, this);
 //  desired_pose_subscriber_ = node_handle.subscribe("desired_joint_pose", 1, &PositionController::desiredJointPoseCallback, this);
   // Add a subscriber to listen for desired joint positions
-  desired_joint_pos_subscriber_ = node_handle.subscribe("/desired_joint_pos", 1, &PositionController::desiredJointPosCallback, this);
+  desired_joint_pos_subscriber_ = node_handle.subscribe("/gravity_compensation_controller//traj_joint_states", 1, &PositionController::desiredJointPosCallback, this);
 
   // KDL setup
   // urdf::Model urdf;
@@ -159,18 +159,19 @@ void PositionController::update(const ros::Time& time, const ros::Duration& peri
 void PositionController::stopping(const ros::Time& time) { }
 
 // Callback function for the desired joint positions
-void PositionController::desiredJointPosCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)
-{
-    if (msg->data.size() != joint_names_.size()) {
-        ROS_ERROR("Received joint position vector size does not match joint count!");
-        return;
+    void PositionController::desiredJointPosCallback(const sensor_msgs::JointState::ConstPtr& msg)
+    {
+        if (msg->position.size() != joint_names_.size()) {
+            ROS_ERROR("Received joint position vector size does not match joint count!");
+            return;
+        }
+        
+        ROS_INFO("Received desired joint positions");
+        for (size_t i = 0; i < joint_names_.size(); i++) {
+            q_[i] = msg->position[i];
+            ROS_INFO("Setting joint %zu to %f", i, q_[i]);
+        }
     }
-    ROS_INFO("Received desired joint positions");
-    for (size_t i = 0; i < joint_names_.size(); i++) {
-        q_[i] = msg->data[i];
-        ROS_INFO("Setting joint %zu to %f", i, q_[i]);
-    }
-}
 
 }
 

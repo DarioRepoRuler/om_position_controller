@@ -55,6 +55,8 @@
 #include <geometry_msgs/Pose.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <kdl/chainfksolvervel_recursive.hpp>
+#include <sensor_msgs/JointState.h>
+
 
 namespace om_position_controller
 {
@@ -97,7 +99,7 @@ class PositionController
   ros::Subscriber desired_joint_pos_subscriber_;
   
   // Callback for updating desired pose
-  void desiredJointPosCallback(const std_msgs::Float64MultiArray::ConstPtr& msg);
+  void desiredJointPosCallback(const sensor_msgs::JointState::ConstPtr& msg);
 };
 }  // namespace advanced_robotics_control
 #endif  // ADVANCED_ROBOTICS_CONTROL_IMPEDANCE_CONTROL_CONTROLLER_H
