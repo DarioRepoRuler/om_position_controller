@@ -23,6 +23,10 @@
 *******************************************************************************/
 
 
+
+// rosbag record -O trajectory.bag /gravity_compensation_controller/traj_joint_states
+// rosbag play trajectory.bag --hz=50
+
 #include "om_position_controller/position_controller.h"
 
 namespace om_position_controller
