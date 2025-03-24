@@ -3,7 +3,7 @@
 
 import rospy
 import numpy as np
-from std_msgs.msg import Float64MultiArray
+from sensor_msgs.msg import JointState
 
 # Define parameters
 num_timesteps = 500      # Total timesteps
@@ -24,22 +24,29 @@ desired_positions[:, 3] = amplitude * np.sin(omega * t + 0)         # No delay
 desired_positions[:, 4] = amplitude * np.sin(omega * t + np.pi / 3) # Phase shift π/3
 desired_positions[:, 5] = amplitude * np.sin(omega * t + 2 * np.pi / 3) # Phase shift 2π/3
 
-def publish_joint_positions():
-    rospy.init_node('desired_joint_pos_publisher', anonymous=True)
-    pub = rospy.Publisher('/desired_joint_pos', Float64MultiArray, queue_size=10)
+# Joint names
+joint_names = ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"]
 
-    rate = rospy.Rate(int(1/dt))  # 10 Hz (matching the trajectory steps)
+def publish_joint_states():
+    rospy.init_node('joint_state_publisher', anonymous=True)
+    pub = rospy.Publisher('/gravity_compensation_controller//traj_joint_states', JointState, queue_size=10)
+
+    rate = rospy.Rate(int(1/dt))  # Matching the trajectory steps
     
-    rospy.loginfo("Publishing desired joint positions...")
+    rospy.loginfo("Publishing joint states...")
 
     for t_idx in range(num_timesteps):
         if rospy.is_shutdown():
             break
 
-        msg = Float64MultiArray()
-        msg.data = desired_positions[t_idx, :].tolist()  # Extract row as list
+        msg = JointState()
+        msg.header.stamp = rospy.Time.now()
+        msg.name = joint_names
+        msg.position = desired_positions[t_idx, :].tolist()
+        msg.velocity = []  # Not needed
+        msg.effort = []    # Not needed
 
-        rospy.loginfo("Timestep %d: %s", t_idx, msg.data)
+        rospy.loginfo("Timestep %d: %s", t_idx, msg.position)
         pub.publish(msg)
 
         rate.sleep()  # Maintain loop rate
@@ -48,6 +55,6 @@ def publish_joint_positions():
 
 if __name__ == '__main__':
     try:
-        publish_joint_positions()
+        publish_joint_states()
     except rospy.ROSInterruptException:
         pass
